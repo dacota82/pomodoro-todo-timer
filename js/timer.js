@@ -1,9 +1,9 @@
-import { createAnalogClock } from './analog-clock.js';
+import { createFlipClock } from './flip-clock.js';
 
 export const MODES = {
-  focus: { label: '집중', duration: 25 * 60 },
-  shortBreak: { label: '짧은 휴식', duration: 5 * 60 },
-  longBreak: { label: '긴 휴식', duration: 15 * 60 },
+  focus: { label: 'FOCUS', duration: 25 * 60 },
+  shortBreak: { label: 'BREAK', duration: 5 * 60 },
+  longBreak: { label: 'LONG BREAK', duration: 15 * 60 },
 };
 
 export function formatTime(seconds) {
@@ -30,7 +30,7 @@ export function createTimer(elements, callbacks) {
   const {
     timerDisplay,
     modeLabel,
-    analogClockSvg,
+    flipClockEl,
     timerCard,
     modeTabs,
     btnStart,
@@ -41,18 +41,18 @@ export function createTimer(elements, callbacks) {
   } = elements;
 
   const { onFocusComplete, onStateChange, getActiveTodoText } = callbacks;
-  const analogClock = createAnalogClock(analogClockSvg);
+  const flipClock = createFlipClock(flipClockEl);
 
   function getDuration() {
     return MODES[state.mode].duration;
   }
 
-  function updateAnalogClock() {
-    analogClock.update(state.timeLeft, state.mode);
+  function updateFlipClock() {
+    flipClock.update(state.timeLeft);
   }
 
   function updateModeUI() {
-    timerCard.className = `timer-card card mode-${state.mode}`;
+    timerCard.className = `timer-zone timer-card mode-${state.mode}`;
     modeLabel.textContent = MODES[state.mode].label;
     modeTabs.forEach((tab) => {
       tab.classList.toggle('active', tab.dataset.mode === state.mode);
@@ -62,7 +62,7 @@ export function createTimer(elements, callbacks) {
   function updateDisplay() {
     timerDisplay.textContent = formatTime(state.timeLeft);
     document.title = `${formatTime(state.timeLeft)} · ${MODES[state.mode].label}`;
-    updateAnalogClock();
+    updateFlipClock();
     updateControls();
     updateActiveTaskLabel();
   }

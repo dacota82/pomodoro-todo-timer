@@ -27,8 +27,8 @@ try {
     {
       timerDisplay: document.getElementById('timer-display'),
       modeLabel: document.getElementById('mode-label'),
-      analogClockSvg: document.querySelector('.analog-clock'),
-      timerCard: document.querySelector('.timer-card'),
+      flipClockEl: document.getElementById('flip-clock'),
+      timerCard: document.querySelector('.timer-zone'),
       modeTabs: document.querySelectorAll('.mode-tab'),
       btnStart: document.getElementById('btn-start'),
       btnPause: document.getElementById('btn-pause'),
