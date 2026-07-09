@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pomodoro · Todo</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <h1 class="app-title">Pomodoro Todo</h1>
+    <p class="today-stats" aria-live="polite">
+      오늘 완료 <span id="today-count" class="today-badge">0</span>
+    </p>
+  </header>
+
+  <main class="app-layout">
+    <section class="timer-card card mode-focus" aria-labelledby="timer-heading">
+      <h2 id="timer-heading" class="visually-hidden">뽀모도로 타이머</h2>
+
+      <p id="active-task-label" class="active-task-label">집중할 할일을 선택하세요</p>
+
+      <div class="time-timer">
+        <div class="time-timer__housing">
+          <svg class="analog-clock" viewBox="0 0 240 240" aria-hidden="true">
+            <circle class="clock-face" cx="120" cy="120" r="96"></circle>
+          </svg>
+        </div>
+        <div
+          id="timer-display"
+          class="timer-display"
+          role="timer"
+          aria-live="polite"
+          aria-atomic="true"
+        >25:00</div>
+      </div>
+
+      <p id="mode-label" class="mode-label">집중</p>
+
+      <nav class="mode-tabs segmented" aria-label="타이머 모드">
+        <button type="button" class="mode-tab active" data-mode="focus">집중</button>
+        <button type="button" class="mode-tab" data-mode="shortBreak">짧은 휴식</button>
+        <button type="button" class="mode-tab" data-mode="longBreak">긴 휴식</button>
+      </nav>
+
+      <div class="timer-controls">
+        <button type="button" id="btn-start" class="btn btn-primary" disabled aria-label="타이머 시작">
+          시작
+        </button>
+        <button type="button" id="btn-pause" class="btn btn-ghost" disabled aria-label="타이머 일시정지">
+          일시정지
+        </button>
+        <button type="button" id="btn-reset" class="btn btn-ghost" aria-label="타이머 리셋">
+          리셋
+        </button>
+      </div>
+
+      <p id="timer-hint" class="timer-hint" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="todo-card card" aria-labelledby="todo-heading">
+      <h2 id="todo-heading" class="todo-heading">할일</h2>
+
+      <form id="todo-form" class="todo-form">
+        <span class="todo-form__icon" aria-hidden="true">+</span>
+        <input
+          type="text"
+          id="todo-input"
+          class="todo-input"
+          placeholder="할일 추가"
+          maxlength="200"
+          autocomplete="off"
+          aria-label="새 할일 입력"
+        >
+        <button type="submit" class="btn btn-add" aria-label="할일 추가">추가</button>
+      </form>
+
+      <nav class="todo-filters" aria-label="할일 필터">
+        <button type="button" class="filter-tab active" data-filter="all">전체</button>
+        <button type="button" class="filter-tab" data-filter="active">진행중</button>
+        <button type="button" class="filter-tab" data-filter="completed">완료</button>
+      </nav>
+
+      <div class="todo-body">
+        <ul id="todo-list" class="todo-list" aria-label="할일 목록"></ul>
+        <p id="todo-empty" class="todo-empty">할일이 없습니다. 위에서 새 할일을 추가해 보세요.</p>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
