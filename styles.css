@@ -390,11 +390,12 @@ body::before {
 
 .todo-input {
   flex: 1;
-  border: none;
-  background: rgba(0, 0, 0, 0.25);
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.35);
   border-radius: 10px;
-  padding: 0.65rem 0.85rem;
-  font-size: 0.9rem;
+  padding: 0.7rem 0.9rem;
+  font-size: 16px; /* iOS 자동 줌 방지 */
   color: var(--text);
   outline: none;
 }
@@ -404,17 +405,18 @@ body::before {
 }
 
 .todo-input:focus {
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.22);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12);
 }
 
 .btn-add {
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 2.5rem;
+  height: 2.5rem;
   border-radius: 10px;
   border: none;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.12);
   color: var(--text);
-  font-size: 1.25rem;
+  font-size: 1.35rem;
   line-height: 1;
   cursor: pointer;
   flex-shrink: 0;

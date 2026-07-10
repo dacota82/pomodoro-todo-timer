@@ -3,8 +3,7 @@ import {
   saveTodos,
   loadTimerState,
   saveTimerState,
-  loadStats,
-  incrementTodayCount,
+  setTodayCompletedCount,
 } from './js/storage.js';
 import { createTimer } from './js/timer.js';
 import { createTodoManager } from './js/todo.js';
@@ -17,12 +16,18 @@ function showBootError(message) {
   document.body.prepend(banner);
 }
 
+function updateTodayCount(count) {
+  const todayCountEl = document.getElementById('today-count');
+  if (todayCountEl) {
+    todayCountEl.textContent = String(count);
+  }
+  setTodayCompletedCount(count);
+}
+
 let timer;
 let todoManager;
 
 try {
-  const todayCountEl = document.getElementById('today-count');
-
   timer = createTimer(
     {
       timerDisplay: document.getElementById('timer-display'),
@@ -42,8 +47,6 @@ try {
         if (activeId) {
           todoManager.incrementPomodoro(activeId);
         }
-        incrementTodayCount();
-        todayCountEl.textContent = String(loadStats().count);
       },
       onStateChange: saveTimerState,
       getActiveTodoText: () => {
@@ -64,9 +67,9 @@ try {
     {
       onSelect: (id) => {
         timer.setActiveTodoId(id);
-        todoManager.setSelectedId(id);
       },
       onTodosChange: saveTodos,
+      onCompletedTodayChange: updateTodayCount,
     }
   );
 
@@ -74,12 +77,21 @@ try {
   const savedTimer = loadTimerState();
   const activeTodoId = savedTimer?.activeTodoId ?? null;
 
-  todayCountEl.textContent = String(loadStats().count);
   todoManager.init(todos, activeTodoId);
   timer.init(savedTimer);
 
-  if (activeTodoId) {
-    timer.setActiveTodoId(activeTodoId);
+  // 저장된 선택 할 일이 아직 유효하면 타이머에 다시 연결
+  const restoredId = todoManager.getTodos().some(
+    (t) => t.id === activeTodoId && !t.completed
+  )
+    ? activeTodoId
+    : null;
+
+  if (restoredId) {
+    timer.setActiveTodoId(restoredId);
+    todoManager.setSelectedId(restoredId);
+  } else {
+    timer.setActiveTodoId(null);
   }
 
   document.addEventListener('keydown', (e) => {
@@ -91,7 +103,7 @@ try {
 
   window.addEventListener('beforeunload', (e) => {
     const btnPause = document.getElementById('btn-pause');
-    if (!btnPause.disabled) {
+    if (btnPause && !btnPause.disabled) {
       e.preventDefault();
       e.returnValue = '';
     }

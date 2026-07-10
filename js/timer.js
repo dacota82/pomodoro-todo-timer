@@ -83,8 +83,11 @@ export function createTimer(elements, callbacks) {
     const needsTodo = state.mode === 'focus';
     const canStart = (!needsTodo || hasTodo) && !state.isRunning;
 
+    // 시작: 집중 모드에서는 할 일 선택 필수 / 실행 중이면 비활성
     btnStart.disabled = !canStart;
+    // 일시정지: 실행 중일 때만 활성
     btnPause.disabled = !state.isRunning;
+    // 리셋: 실행 중이 아닐 때만 활성
     btnReset.disabled = state.isRunning;
 
     modeTabs.forEach((tab) => {

@@ -1,20 +1,37 @@
+import { getTodayString } from './storage.js';
+
+function createTodoId() {
+  if (typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
 export function createTodoManager(elements, callbacks) {
   let todos = [];
   let filter = 'all';
   let selectedId = null;
 
   const { todoList, todoEmpty, todoForm, todoInput, filterTabs } = elements;
-  const { onSelect, onTodosChange } = callbacks;
+  const { onSelect, onTodosChange, onCompletedTodayChange } = callbacks;
 
   function getFilteredTodos() {
-    switch (filter) {
-      case 'active':
-        return todos.filter((t) => !t.completed);
-      case 'completed':
-        return todos.filter((t) => t.completed);
-      default:
-        return todos;
-    }
+    if (filter === 'active') return todos.filter((t) => !t.completed);
+    if (filter === 'completed') return todos.filter((t) => t.completed);
+    return todos;
+  }
+
+  function notifyCompletedToday() {
+    const today = getTodayString();
+    const count = todos.filter(
+      (todo) => todo.completed && todo.completedAt === today
+    ).length;
+    onCompletedTodayChange?.(count);
+  }
+
+  function persist() {
+    onTodosChange?.(todos);
+    notifyCompletedToday();
   }
 
   function render() {
@@ -38,7 +55,6 @@ export function createTodoManager(elements, callbacks) {
 
       const checkBox = document.createElement('span');
       checkBox.className = 'todo-check__box';
-
       checkLabel.append(checkbox, checkBox);
 
       const text = document.createElement('span');
@@ -58,7 +74,7 @@ export function createTodoManager(elements, callbacks) {
       deleteBtn.setAttribute('aria-label', `${todo.text} 삭제`);
       deleteBtn.textContent = '×';
 
-      checkbox.addEventListener('click', (e) => {
+      checkbox.addEventListener('change', (e) => {
         e.stopPropagation();
         toggleComplete(todo.id);
       });
@@ -73,37 +89,29 @@ export function createTodoManager(elements, callbacks) {
       });
 
       li.addEventListener('click', () => selectTodo(todo.id));
-
       li.append(checkLabel, text, pomodoro, deleteBtn);
       todoList.appendChild(li);
     });
 
     todoEmpty.classList.toggle('hidden', filtered.length > 0);
-    onTodosChange?.(todos);
-  }
-
-  function persist() {
-    onTodosChange?.(todos);
-    render();
   }
 
   function addTodo(text) {
     const trimmed = text.trim();
     if (!trimmed) return;
 
-    const todo = {
-      id: typeof crypto.randomUUID === 'function'
-        ? crypto.randomUUID()
-        : `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    todos.unshift({
+      id: createTodoId(),
       text: trimmed,
       completed: false,
+      completedAt: null,
       pomodoroCount: 0,
       createdAt: Date.now(),
-    };
+    });
 
-    todos.unshift(todo);
-    persist();
     todoInput.value = '';
+    persist();
+    render();
   }
 
   function toggleComplete(id) {
@@ -111,25 +119,33 @@ export function createTodoManager(elements, callbacks) {
     if (!todo) return;
 
     todo.completed = !todo.completed;
+    todo.completedAt = todo.completed ? getTodayString() : null;
+
     if (todo.completed && selectedId === id) {
       selectedId = null;
       onSelect?.(null);
     }
+
     persist();
+    render();
   }
 
   function deleteTodo(id) {
     todos = todos.filter((t) => t.id !== id);
+
     if (selectedId === id) {
       selectedId = null;
       onSelect?.(null);
     }
+
     persist();
+    render();
   }
 
   function selectTodo(id) {
     const todo = todos.find((t) => t.id === id);
     if (!todo || todo.completed) return;
+    if (selectedId === id) return;
 
     selectedId = id;
     onSelect?.(id);
@@ -139,8 +155,9 @@ export function createTodoManager(elements, callbacks) {
   function incrementPomodoro(id) {
     const todo = todos.find((t) => t.id === id);
     if (!todo) return;
-    todo.pomodoroCount += 1;
+    todo.pomodoroCount = (todo.pomodoroCount || 0) + 1;
     persist();
+    render();
   }
 
   function getTodoText(id) {
@@ -152,9 +169,20 @@ export function createTodoManager(elements, callbacks) {
     render();
   }
 
-  function init(initialTodos, initialSelectedId) {
-    todos = initialTodos;
-    selectedId = initialSelectedId;
+  function init(initialTodos = [], initialSelectedId = null) {
+    todos = (initialTodos || []).map((todo) => ({
+      ...todo,
+      completed: Boolean(todo.completed),
+      completedAt: todo.completedAt ?? null,
+      pomodoroCount: todo.pomodoroCount || 0,
+    }));
+
+    const stillExists = todos.some(
+      (t) => t.id === initialSelectedId && !t.completed
+    );
+    selectedId = stillExists ? initialSelectedId : null;
+
+    persist();
     render();
   }
 
